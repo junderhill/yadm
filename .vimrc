@@ -6,6 +6,10 @@ set autoindent
 set showcmd
 set ruler
 set backspace=indent,eol,start
+set mouse=a
+set nofoldenable
+set foldmethod=indent
+set foldlevel=2
 syntax on
 
 set linebreak
@@ -33,6 +37,7 @@ Plug 'vim-airline/vim-airline'
 Plug 'jiangmiao/auto-pairs'
 Plug 'lambdalisue/fern.vim'
 Plug 'liuchengxu/vim-which-key'
+Plug 'tpope/vim-fugitive'
 
 " Golang
 Plug 'fatih/vim-go', { 'do': ':GoUpdateBinaries' }
@@ -46,15 +51,16 @@ call plug#end()
 
 " autosave settings
 set noswapfile
-let g:auto_save = 1
-let g:auto_save_silent = 1
-let g:auto_save_events = ["InsertLeave", "TextChanged", "FocusLost"]
+" let g:auto_save = 1
+" let g:auto_save_silent = 1
+" let g:auto_save_events = ["InsertLeave", "TextChanged", "FocusLost"]
 
 " which key settings
 "Put this before any of the other plugin-specific config"
 let g:mapleader = ","
 nnoremap <silent> <leader> :<c-u>WhichKey ','<CR>
 set timeoutlen=200
+nnoremap <space> za
 
 
 "--- Fern Filetree settings -------------------------------------------"
@@ -65,11 +71,12 @@ let g:fern#default_exclude = '\%(\.DS_Store\|__pycache__\|.pytest_cache\|.ruff_c
 nnoremap <leader>a :Fern . -drawer -toggle<CR>
 
 "--- FZF settings --------------------------------"
-nnoremap <silent> <leader>f :Lines<CR>
-nnoremap <silent> <leader>F :Ag<CR>
+nnoremap <silent> <leader>l :Lines<CR>
+nnoremap <silent> <leader>L :Ag<CR>
 nnoremap <silent> <leader>b :Buffers <CR>
 nnoremap <silent> <leader>g :GFiles <CR>
 nnoremap <silent> <leader>G :Files <CR>
+command! -bang -nargs=* Ag call fzf#vim#ag(<q-args>, {'options': '--delimiter : --nth 4..'}, <bang>0)
 
 "Map buffer quick switch keys"
 nnoremap <silent> <leader><Tab> <C-^>
@@ -119,9 +126,9 @@ nmap <silent> <leader>] <Plug>(coc-diagnostic-next)
 
 " GoTo code navigation
 nmap <silent> <leader>d <Plug>(coc-definition)
+nmap <silent> <leader>D <Plug>(coc-implementation)
 nmap <silent> <leader>y <Plug>(coc-type-definition)
-nmap <silent> <leader>i <Plug>(coc-implementation)
-nmap <silent> <leader>r <Plug>(coc-references)
+nmap <silent> <leader>R <Plug>(coc-references)
 
 " Use K to show documentation in preview window
 nnoremap <silent> K :call ShowDocumentation()<CR>
@@ -244,9 +251,10 @@ inoremap jk <ESC>
 
 " Buffer navigation
 noremap <leader>z :bp<CR>
-noremap <leader>q :bp<CR>
 noremap <leader>x :bn<CR>
-noremap <leader>w :bn<CR>
+" close current buffer
+noremap <leader>bd :bd<CR>
+
 
 set number relativenumber
 set ruler
@@ -333,6 +341,7 @@ let g:go_highlight_extra_types = 1
 
 autocmd BufNewFile,BufRead *.go setlocal noexpandtab tabstop=4 shiftwidth=4 softtabstop=4
 
+
 augroup completion_preview_close
   autocmd!
   if v:version > 703 || v:version == 703 && has('patch598')
@@ -362,6 +371,7 @@ augroup go
   au FileType go imap <C-g> <esc>:<C-u>GoDecls<cr>
   au FileType go imap <leader>dr <esc>:<C-u>GoDeclsDir<cr>
   au FileType go nmap <leader>rb :<C-u>call <SID>build_go_files()<CR>
+  au FileType go :set foldmethod=syntax
 
 augroup END
 
