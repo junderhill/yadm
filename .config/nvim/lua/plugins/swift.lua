@@ -64,6 +64,7 @@ return {
 
   {
     "wojciech-kulik/xcodebuild.nvim",
+    cond = vim.fn.has("mac") == 1, -- Xcode only exists on macOS
     dependencies = {
       "nvim-telescope/telescope.nvim",
       "MunifTanjim/nui.nvim",

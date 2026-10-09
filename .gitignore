@@ -1,0 +1,23 @@
+# yadm safety net. Only yadm reads this (its work tree is $HOME); other repos have their own root.
+# Stops accidental `yadm add <dir>` from picking up credentials or app state.
+# Already-tracked files are unaffected. To add an ignored file on purpose: yadm add -f <file>
+
+# credentials
+.ssh/
+.aws/
+.docker/
+.gnupg/
+.netrc
+.config/gh/hosts.yml
+.config/github-copilot/
+.config/sops/
+**/secrets*.sh
+**/*.pem
+**/*.key
+**/.env
+
+# history and app state
+.config/**/history*
+.local/
+.cache/
+.claude/
