@@ -6,7 +6,7 @@ _alias_default() { alias "${1%%=*}" >/dev/null 2>&1 || alias "$1"; }
 
 # --- navigation (cd itself is zoxide: `cd foo` jumps to your most-used dir matching "foo") ---
 alias ..='cd ..' ...='cd ../..' ....='cd ../../..'
-mkcd() { mkdir -p "$1" && cd "$1"; }
+mkcd() { mkdir -p "$1" && cd "$1"; }    # make a dir and cd into it
 _alias_default ll='ls -lh'
 _alias_default la='ls -lAh'
 _alias_default l='ls -lah'
@@ -18,7 +18,8 @@ fi
 if [ -d ~/falcon-vault ]; then alias vault='cd ~/falcon-vault' work='cd ~/falcon-vault/01-Work'; fi
 alias dum='du -h -d 1 | sort -h'      # dir sizes, biggest last
 
-# --- same as the Chef aliases on the devbox (approximations; the devbox's own definitions win there) ---
+# --- devbox (Chef) aliases, available everywhere ---
+# Approximations of Chef's; on the devbox Chef's own definitions win.
 _alias_default tn='tmux new -s'
 _alias_default ta='tmux attach -t'
 _alias_default j='jobs'
@@ -44,6 +45,7 @@ _alias_default gc='git commit -a'
 _alias_default gs='git log -p --stat'
 _alias_default fix='git commit -a --amend --no-edit'
 _alias_default ff='git merge --ff-only'
+# print the repo's main branch name (main/master)
 git_main_branch() {
   local b
   b=$(git symbolic-ref --quiet --short refs/remotes/origin/HEAD 2>/dev/null) && { echo "${b#origin/}"; return; }
@@ -54,3 +56,44 @@ gm() { git checkout "$(git_main_branch)" && git pull; }    # back to main, up to
 # --- Claude Code ---
 alias cl=claude cr='claude --resume' ca='claude agents'
 fresh() { gm && claude "$@"; }    # start a task: update main, open Claude
+
+# --- keys & tricks ---
+#: cd foo  jump to the best-matching dir you've visited (zoxide)
+#: cdi  pick a dir interactively (zoxide + fzf)
+#: Ctrl-R  search history, ranked by dir and recency (McFly)
+#: Ctrl-T  insert a file path (fzf)
+#: Alt-C  cd into a subdir (fzf)
+#: Esc v  edit the current command in nvim
+#: ↑ / ↓  history matching what you've typed
+#: Ctrl-L  clear screen
+#: ahelp [word]  this cheat sheet, optionally filtered
+
+# Cheat sheet built from the comments in these files, with live values from this shell
+ahelp() {
+  local f k n d v hdr="" pat="${1-}" B="" D="" H="" R=""
+  [ -t 1 ] && B=$(printf '\033[1m') D=$(printf '\033[2m') H=$(printf '\033[1;35m') R=$(printf '\033[0m')
+  for f in ~/.config/shell/aliases.sh ~/.config/shell/work.sh ~/.config/shell/local.sh; do
+    [ -f "$f" ] && cat "$f"
+  done | awk -f ~/.config/shell/ahelp.awk | while IFS='|' read -r k n d; do
+    case $k in
+      S) hdr=$n; continue ;;
+      A) v=$(alias "$n" 2>/dev/null) || continue
+         v=${v#alias }; v=${v#*=}; v=${v#\'}; v=${v%\'} ;;
+      F) type "$n" >/dev/null 2>&1 || continue; v="ƒ" ;;
+      K) v="" ;;
+    esac
+    if [ -n "$pat" ]; then
+      printf '%s %s %s %s\n' "$hdr" "$n" "$v" "$d" | grep -qi -- "$pat" || continue
+    fi
+    [ -n "$hdr" ] && { printf '\n%s%s%s\n' "$H" "$hdr" "$R"; hdr=""; }
+    if [ "$k" = K ]; then
+      printf '  %s%-15s%s %s\n' "$B" "$n" "$R" "$d"
+    elif [ "$k" = F ]; then
+      printf '  %s%-15s%s %s\n' "$B" "$n" "$R" "$d"
+    else
+      [ ${#v} -gt 43 ] && v="${v:0:42}…"
+      printf '  %s%-15s%s %-43s %s%s%s\n' "$B" "$n" "$R" "$v" "$D" "$d" "$R"
+    fi
+  done
+  echo
+}

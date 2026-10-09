@@ -1,8 +1,9 @@
 # DDG-specific helpers. Sourced only if this file exists.
 
+# --- devbox helpers ---
 DEV=${DEV-}   # set in work.local.sh
 
-if [ "$(uname -s)" = Darwin ]; then
+if [ "$DOTFILES_OS" = Darwin ]; then
   alias dev="ssh $DEV"
   alias hd="herdr --remote $DEV"
   # tun 8888 [host] [remote_port]   forward localhost:8888 to the devbox
