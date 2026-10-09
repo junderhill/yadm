@@ -19,6 +19,12 @@
 
 # history and app state
 .config/**/history*
-.local/
+# everything under .local except yadm's encrypted archive
+.local/*
+!.local/share/
+.local/share/*
+!.local/share/yadm/
+.local/share/yadm/*
+!.local/share/yadm/archive
 .cache/
 .claude/

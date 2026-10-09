@@ -1,0 +1,2 @@
+# Files yadm stores encrypted (yadm encrypt / yadm decrypt). Paths relative to $HOME.
+.config/shell/work.local.sh
