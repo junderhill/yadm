@@ -70,15 +70,40 @@ fi
 # (auto-ls, McFly, zoxide) into STARSHIP_PROMPT_COMMAND and runs them itself.
 _have starship && eval "$(starship init "$_sh")"
 
-# Chef boxes: Chef's later direnv and pyenv-virtualenv inits would *prepend* their hooks,
-# so they'd run before starship_precmd and overwrite $? (wrong error colour in the prompt).
-# Put them after starship_precmd now. Both inits skip prepending when they find their hook
-# name already there. The no-op stubs cover a hook whose tool isn't installed; Chef's real
-# definitions replace them.
-if [ "$_sh" = bash ] && [ -n "${DOTFILES_CHEF-}" ] && declare -F starship_precmd >/dev/null; then
-  declare -F _direnv_hook >/dev/null || _direnv_hook() { :; }
-  declare -F _pyenv_virtualenv_hook >/dev/null || _pyenv_virtualenv_hook() { :; }
-  PROMPT_COMMAND="starship_precmd;_direnv_hook;_pyenv_virtualenv_hook"
+# Bash hook order. starship_precmd saves $?, restores it, runs STARSHIP_PROMPT_COMMAND,
+# *then* builds PS1, and leaves $? clobbered afterwards. So every other prompt hook belongs
+# in STARSHIP_PROMPT_COMMAND: it sees the real exit status, and env changes (direnv) show
+# in the same prompt.
+if [ "$_sh" = bash ] && declare -F starship_precmd >/dev/null; then
+  # Chef boxes: Chef's direnv and pyenv-virtualenv inits run *after* this file and would
+  # prepend their hooks ahead of starship_precmd (bad $?, env shown one prompt late).
+  # Run them from STARSHIP_PROMPT_COMMAND, and name them in a comment line in
+  # PROMPT_COMMAND so Chef's inits think they're already installed. The `;name;` form
+  # satisfies both direnv's newer `*";_direnv_hook;"*` check and the older regex check.
+  # The no-op stubs cover a tool that isn't installed; Chef's real definitions replace them.
+  if [ -n "${DOTFILES_CHEF-}" ]; then
+    declare -F _direnv_hook >/dev/null || _direnv_hook() { :; }
+    declare -F _pyenv_virtualenv_hook >/dev/null || _pyenv_virtualenv_hook() { :; }
+    STARSHIP_PROMPT_COMMAND="_direnv_hook;_pyenv_virtualenv_hook${STARSHIP_PROMPT_COMMAND:+;$STARSHIP_PROMPT_COMMAND}"
+    PROMPT_COMMAND=$'starship_precmd\n#;_direnv_hook;_pyenv_virtualenv_hook; (run from STARSHIP_PROMPT_COMMAND)'
+  fi
+  # McFly (bash >= 5.1) registers itself as a separate PROMPT_COMMAND[n] entry, which runs
+  # after starship_precmd and so records every command's exit status as 0. Move it into
+  # STARSHIP_PROMPT_COMMAND, first, where $? is the real status.
+  if declare -F mcfly_prompt_command >/dev/null; then
+    if [[ "$(declare -p PROMPT_COMMAND 2>/dev/null)" == "declare -a"* ]]; then
+      _pc=(); for _c in "${PROMPT_COMMAND[@]}"; do [ "$_c" = mcfly_prompt_command ] || _pc+=("$_c"); done
+      PROMPT_COMMAND=("${_pc[@]}"); unset _pc _c
+    fi
+    case ";${STARSHIP_PROMPT_COMMAND-};" in
+      *";mcfly_prompt_command;"*) ;;
+      *) STARSHIP_PROMPT_COMMAND="mcfly_prompt_command${STARSHIP_PROMPT_COMMAND:+;$STARSHIP_PROMPT_COMMAND}" ;;
+    esac
+  fi
+  # Starship restores $? but then runs `[[ -n $STARSHIP_PROMPT_COMMAND ]]`, which resets it
+  # to 0 before the eval. Put the saved status back first so the hooks really see it.
+  _restore_status() { return "${STARSHIP_CMD_STATUS:-0}"; }
+  STARSHIP_PROMPT_COMMAND="_restore_status${STARSHIP_PROMPT_COMMAND:+;$STARSHIP_PROMPT_COMMAND}"
 fi
 
 unset _sh
