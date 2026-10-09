@@ -26,12 +26,18 @@ return {
     opts = {
       servers = {
         sourcekit = {
-          root_dir = function(filename, _)
+          root_dir = function(bufnr, on_dir)
+            local filename = vim.api.nvim_buf_get_name(bufnr)
             local util = require("lspconfig.util")
-            return util.root_pattern("buildServer.json")(filename)
+
+            local root = util.root_pattern("buildServer.json")(filename)
               or util.root_pattern("*.xcodeproj", "*.xcworkspace")(filename)
               or util.find_git_ancestor(filename)
               or util.root_pattern("Package.swift")(filename)
+
+            if root then
+              on_dir(root)
+            end
           end,
         },
       },
