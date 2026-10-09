@@ -33,7 +33,11 @@ fi
 
 # --- 2. tools ---------------------------------------------------------------------
 if [ -n "$chef" ]; then
-  say "Chef-managed box: skipping package installs (Homebrew isn't used here)"
+  # Chef owns installs here. Only report what the shell config would use but is missing.
+  say "Chef-managed box: not installing anything"
+  for t in starship mcfly zoxide fzf rg jq; do
+    command -v "$t" >/dev/null 2>&1 || say "  missing: $t (install it to ~/.local/bin, see the handover note)"
+  done
 else
   if ! command -v brew >/dev/null 2>&1 && [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ] && [ ! -x /opt/homebrew/bin/brew ]; then
     say "installing Homebrew"

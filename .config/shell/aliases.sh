@@ -30,7 +30,7 @@ _alias_default ln='ln -v'
 
 # --- editors / tools ---
 alias vim=nvim v=nvim
-alias lg=lazygit
+command -v lazygit >/dev/null 2>&1 && alias lg=lazygit
 alias mdv='glow -p'
 alias dotsync='yadm pull && yadm bootstrap'   # Chef boxes also pull on every shell start
 

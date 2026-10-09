@@ -1,45 +1,48 @@
-# Shared CLI tools for the Mac and personal Linux boxes (Homebrew on Linux).
-# Installed by ~/.config/yadm/bootstrap. Not used on Chef-managed devboxes.
-# Mac GUI apps aren't managed here.
+# Tools for the Mac and personal Linux boxes (Homebrew on Linux).
+# Installed by ~/.config/yadm/bootstrap. Never used on Chef-managed devboxes: the
+# bootstrap skips installs there, so whatever Chef manages stays Chef's.
+#
+#   brew "x"   always from Homebrew. The shell config needs a recent version that
+#              system packages often lack (e.g. Ubuntu's fzf can't do `fzf --bash`).
+#   tool "x"   only installed if the command isn't already present some other way
+#              (system package, official installer, Chef...). A copy that Homebrew
+#              installed still counts as ours, so `brew bundle` keeps upgrading it.
 
-# shell
-brew "bash"
+def tool(formula, command = formula)
+  prefix = defined?(HOMEBREW_PREFIX) ? HOMEBREW_PREFIX.to_s : ENV.fetch("HOMEBREW_PREFIX", "/opt/homebrew")
+  search = ENV["HOMEBREW_PATH"] || ENV["PATH"]   # brew narrows PATH; HOMEBREW_PATH is the user's real one
+  found = search.split(":").map { |d| File.join(d, command) }.find { |p| File.executable?(p) && !File.directory?(p) }
+  if found.nil? || found.start_with?(prefix)
+    brew formula
+  else
+    puts "Brewfile: skipping #{formula}, already provided by #{found}" if ENV["HOMEBREW_VERBOSE"]
+  end
+end
+
+# --- what the shell config is built on ---
 brew "starship"
 brew "mcfly"
 brew "zoxide"
 brew "fzf"
-brew "direnv"
-brew "zsh-autosuggestions"
-brew "zsh-syntax-highlighting"
+brew "neovim"            # LazyVim needs a newer nvim than most distros ship
+tool "fd"                # used by fzf's Ctrl-T (respects .gitignore)
 
-# editing / git
-brew "git"
-brew "neovim"
-brew "tmux"
-brew "lazygit"
-brew "git-delta"
-brew "gh"
-brew "yadm"
-
-# search / files / viewing
-brew "ripgrep"
-brew "fd"
-brew "bat"
-brew "eza"
-brew "jq"
-brew "glow"
-
-# languages / tasks
-brew "just"
-brew "uv"
-brew "go"
-
-if OS.linux?
-  brew "mise"          # node/python/go versions (the Mac keeps nvm; Chef boxes have their own shims)
-end
+# --- daily tools ---
+tool "git"
+tool "tmux"
+tool "gh"
+tool "yadm"
+tool "ripgrep", "rg"
+tool "jq"
+tool "glow"
+tool "just"
+tool "uv"
+tool "go"
 
 if OS.mac?
-  brew "gawk"          # GNU awk, same as Linux
-  brew "libpq"         # psql
+  brew "zsh-autosuggestions"
+  brew "zsh-syntax-highlighting"
+  brew "gawk"            # GNU awk, same as Linux
+  brew "libpq"           # psql
   brew "python@3.11"
 end
