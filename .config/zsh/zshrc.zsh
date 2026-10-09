@@ -40,7 +40,7 @@ add-zsh-hook chpwd _auto_ls
 source ~/.config/shell/aliases.sh
 source ~/.config/shell/tools.sh
 bindkey -M vicmd '^R' mcfly-history-widget 2>/dev/null   # Ctrl-R works in normal mode too
-for f in ~/.config/shell/{work,local,secrets}.sh(N); do source $f; done; unset f
+for f in ~/.config/shell/{work,work.local,local,secrets}.sh(N); do source $f; done; unset f
 
 # --- plugins (syntax highlighting must be last) ---
 for p in zsh-autosuggestions zsh-syntax-highlighting; do

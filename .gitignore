@@ -12,6 +12,7 @@
 .config/github-copilot/
 .config/sops/
 **/secrets*.sh
+**/*.local.sh
 **/*.pem
 **/*.key
 **/.env

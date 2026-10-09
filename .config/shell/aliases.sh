@@ -53,6 +53,18 @@ git_main_branch() {
 }
 gm() { git checkout "$(git_main_branch)" && git pull; }    # back to main, up to date
 
+# --- GitHub ---
+# gh_comments <owner/repo> <pr> [user]   PR review comments (humans only) as JSON
+gh_comments() {
+  if [ -z "${1-}" ] || [ -z "${2-}" ]; then
+    echo "usage: gh_comments <owner/repo> <pr_number> [user]" >&2; return 1
+  fi
+  # --paginate: gh returns 30 per page; -s + add merges the pages into one array
+  gh api --paginate "repos/$1/pulls/$2/comments" |
+    jq -s --arg user "${3-}" '[ add[] | select(.user.type == "User" and ($user == "" or .user.login == $user))
+                               | { user: .user.login, diff_hunk, line, start_line, body } ]'
+}
+
 # --- Claude Code ---
 alias cl=claude cr='claude --resume' ca='claude agents'
 fresh() { gm && claude "$@"; }    # start a task: update main, open Claude
@@ -72,7 +84,7 @@ fresh() { gm && claude "$@"; }    # start a task: update main, open Claude
 ahelp() {
   local f k n d v hdr="" pat="${1-}" B="" D="" H="" R=""
   [ -t 1 ] && B=$(printf '\033[1m') D=$(printf '\033[2m') H=$(printf '\033[1;35m') R=$(printf '\033[0m')
-  for f in ~/.config/shell/aliases.sh ~/.config/shell/work.sh ~/.config/shell/local.sh; do
+  for f in ~/.config/shell/aliases.sh ~/.config/shell/work.sh ~/.config/shell/work.local.sh ~/.config/shell/local.sh; do
     [ -f "$f" ] && cat "$f"
   done | awk -f ~/.config/shell/ahelp.awk | while IFS='|' read -r k n d; do
     case $k in
