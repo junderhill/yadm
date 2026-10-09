@@ -18,3 +18,4 @@ path_prepend "$HOME/Packages/bin"      # duplicacy (backups)
 path_append  "$HOME/.lmstudio/bin"     # LM Studio CLI (lms)
 
 export CLICOLOR=1                      # coloured BSD ls
+export COPYFILE_DISABLE=1              # tar (and so `yadm encrypt`) won't add ._ AppleDouble files

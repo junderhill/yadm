@@ -33,6 +33,16 @@ alias vim=nvim v=nvim
 command -v lazygit >/dev/null 2>&1 && alias lg=lazygit
 alias mdv='glow -p'
 alias dotsync='yadm pull && yadm bootstrap'   # Chef boxes also pull on every shell start
+# Same settings as yadm 3's openssl cipher (aes-256-cbc, pbkdf2, 100000 iterations, sha512).
+# ydecrypt   restore yadm-encrypted files (for yadm < 3, e.g. Chef's 2.5 on the devbox)
+ydecrypt() {
+  local archive=~/.local/share/yadm/archive gnu=""
+  [ -f "$archive" ] || { echo "ydecrypt: no archive at $archive" >&2; return 1; }
+  # Archives made on macOS carry com.apple.provenance xattr headers; GNU tar warns about them harmlessly
+  tar --version 2>/dev/null | grep -q 'GNU tar' && gnu=--warning=no-unknown-keyword
+  openssl enc -d -aes-256-cbc -pbkdf2 -iter 100000 -md sha512 -in "$archive" |
+    tar -xvf - -C ~ --exclude='._*' $gnu && chmod 600 ~/.config/shell/work.local.sh
+}
 
 # --- git (status/diff/pull/push are the most-typed commands on both machines) ---
 alias g=git

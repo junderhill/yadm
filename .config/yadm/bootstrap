@@ -23,7 +23,8 @@ ensure_line() {
 # --- 1. entry points ------------------------------------------------------------
 bash_loader='[ -f ~/.config/bash/bashrc.bash ] && . ~/.config/bash/bashrc.bash'
 if [ -n "$chef" ]; then
-  # Chef rewrites ~/.bashrc, then sources ~/.ddg/bashrc last. Never touch ~/.bashrc here.
+  # Chef rewrites ~/.bashrc, which sources ~/.ddg/bashrc (then runs its own direnv/pyenv setup).
+  # Never touch ~/.bashrc here.
   ensure_line "$HOME/.ddg/bashrc" "$bash_loader"
 else
   ensure_line "$HOME/.bashrc" "$bash_loader"
