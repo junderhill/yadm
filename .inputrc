@@ -1,0 +1,27 @@
+# Readline (bash, python REPL, etc.) — vi mode to match zsh.
+$include /etc/inputrc
+
+set editing-mode vi
+set keyseq-timeout 10
+set show-mode-in-prompt on
+# Cursor: bar in insert mode, block in normal mode (instead of a text marker)
+set vi-ins-mode-string \1\e[6 q\2
+set vi-cmd-mode-string \1\e[2 q\2
+
+set completion-ignore-case on
+set show-all-if-ambiguous on
+set colored-stats on
+set mark-symlinked-directories on
+
+$if mode=vi
+set keymap vi-insert
+"\C-l": clear-screen
+"\C-a": beginning-of-line
+"\C-e": end-of-line
+"\C-w": backward-kill-word
+"\e[A": history-search-backward
+"\e[B": history-search-forward
+set keymap vi-command
+"k": history-search-backward
+"j": history-search-forward
+$endif

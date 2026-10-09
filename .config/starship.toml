@@ -1,0 +1,40 @@
+# Same prompt in zsh (Mac) and bash (devbox).
+"$schema" = 'https://starship.rs/config-schema.json'
+add_newline = false
+command_timeout = 300
+
+# user@host only shows over SSH, so you can always tell when you're on the devbox
+format = "$username$hostname$directory$git_branch$git_status$python$cmd_duration$line_break$character"
+
+[username]
+format = "[$user]($style)@"
+style_user = "bold purple"
+
+[hostname]
+format = "[$hostname]($style) "
+style = "bold purple"
+
+[directory]
+style = "bold cyan"
+truncation_length = 4
+truncate_to_repo = false
+
+[git_branch]
+format = "[ $branch]($style) "
+style = "bold #ff79c6"
+
+[git_status]
+style = "yellow"
+
+[python]
+format = '[(\($virtualenv\) )]($style)'
+
+[cmd_duration]
+min_time = 3000
+format = "[⏱ $duration]($style) "
+style = "dimmed white"
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold green)"

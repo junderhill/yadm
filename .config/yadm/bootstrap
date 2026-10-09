@@ -1,0 +1,57 @@
+#!/usr/bin/env bash
+# Run by `yadm bootstrap` (after `yadm clone`, or via `dotsync`). Safe to re-run.
+#  1. Points the shell's entry file at ~/.config/{zsh,bash}
+#  2. Installs the shared tool set (skipped on Chef-managed boxes)
+#  3. Machine-specific links (vault)
+set -euo pipefail
+
+os=$(uname -s)
+chef=
+if [ -d /etc/chef ] || [ -f "$HOME/.ddg_aliases" ]; then chef=1; fi
+say() { printf '\033[1;35m==>\033[0m %s\n' "$*"; }
+
+# Append a line to a file only if it isn't already there
+ensure_line() {
+  local file=$1 line=$2
+  mkdir -p "$(dirname "$file")"
+  if ! grep -qxF "$line" "$file" 2>/dev/null; then
+    printf '\n%s\n' "$line" >> "$file"
+    say "added loader to $file"
+  fi
+}
+
+# --- 1. entry points ------------------------------------------------------------
+bash_loader='[ -f ~/.config/bash/bashrc.bash ] && . ~/.config/bash/bashrc.bash'
+if [ -n "$chef" ]; then
+  # Chef rewrites ~/.bashrc, then sources ~/.ddg/bashrc last. Never touch ~/.bashrc here.
+  ensure_line "$HOME/.ddg/bashrc" "$bash_loader"
+else
+  ensure_line "$HOME/.bashrc" "$bash_loader"
+  ensure_line "$HOME/.bash_profile" '[ -f ~/.bashrc ] && . ~/.bashrc'
+fi
+# ~/.zshrc is tracked by yadm and already sources ~/.config/zsh/zshrc.zsh
+
+# --- 2. tools ---------------------------------------------------------------------
+if [ -n "$chef" ]; then
+  say "Chef-managed box: skipping package installs (Homebrew isn't used here)"
+else
+  if ! command -v brew >/dev/null 2>&1 && [ ! -x /home/linuxbrew/.linuxbrew/bin/brew ] && [ ! -x /opt/homebrew/bin/brew ]; then
+    say "installing Homebrew"
+    [ "$os" = Linux ] && command -v apt-get >/dev/null && sudo apt-get install -y build-essential procps curl file git
+    NONINTERACTIVE=1 /bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+  fi
+  for b in /opt/homebrew/bin/brew /home/linuxbrew/.linuxbrew/bin/brew; do
+    [ -x "$b" ] && eval "$("$b" shellenv)"
+  done
+  say "brew bundle"
+  brew bundle --file "$HOME/.config/brew/Brewfile"
+fi
+
+# --- 3. links ---------------------------------------------------------------------
+# Falcon vault lives at ~/falcon-vault everywhere; link it where SyncThing holds the real copy
+if [ ! -e "$HOME/falcon-vault" ] && [ -d "$HOME/SyncThing/Falcon-Vault" ]; then
+  ln -s "$HOME/SyncThing/Falcon-Vault" "$HOME/falcon-vault"
+  say "linked ~/falcon-vault -> ~/SyncThing/Falcon-Vault"
+fi
+
+say "done. Open a new shell."

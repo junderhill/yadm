@@ -1,0 +1,45 @@
+# Shared CLI tools for the Mac and personal Linux boxes (Homebrew on Linux).
+# Installed by ~/.config/yadm/bootstrap. Not used on Chef-managed devboxes.
+# Mac GUI apps aren't managed here.
+
+# shell
+brew "bash"
+brew "starship"
+brew "mcfly"
+brew "zoxide"
+brew "fzf"
+brew "direnv"
+brew "zsh-autosuggestions"
+brew "zsh-syntax-highlighting"
+
+# editing / git
+brew "git"
+brew "neovim"
+brew "tmux"
+brew "lazygit"
+brew "git-delta"
+brew "gh"
+brew "yadm"
+
+# search / files / viewing
+brew "ripgrep"
+brew "fd"
+brew "bat"
+brew "eza"
+brew "jq"
+brew "glow"
+
+# languages / tasks
+brew "just"
+brew "uv"
+brew "go"
+
+if OS.linux?
+  brew "mise"          # node/python/go versions (the Mac keeps nvm; Chef boxes have their own shims)
+end
+
+if OS.mac?
+  brew "gawk"          # GNU awk, same as Linux
+  brew "libpq"         # psql
+  brew "python@3.11"
+end
