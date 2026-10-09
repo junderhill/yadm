@@ -23,6 +23,7 @@ PROMPT_COMMAND="_auto_ls${PROMPT_COMMAND:+; $PROMPT_COMMAND}"
 # --- shared aliases, tools, machine extras ---
 . ~/.config/shell/aliases.sh
 . ~/.config/shell/tools.sh
-for f in ~/.config/shell/work.sh ~/.config/shell/local.sh ~/.config/shell/secrets.sh; do
+# ~/.bash_secrets: the devbox's pre-existing secrets file (move into secrets.sh after migrating)
+for f in ~/.config/shell/work.sh ~/.config/shell/local.sh ~/.config/shell/secrets.sh ~/.bash_secrets; do
   [ -f "$f" ] && . "$f"
 done; unset f

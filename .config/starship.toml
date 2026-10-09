@@ -4,7 +4,7 @@ add_newline = false
 command_timeout = 300
 
 # user@host only shows over SSH, so you can always tell when you're on the devbox
-format = "$username$hostname$directory$git_branch$git_status$python$cmd_duration$line_break$character"
+format = "$username$hostname${env_var.VESPA_ENV}$directory$git_branch$git_status$python$cmd_duration$line_break$character"
 
 [username]
 format = "[$user]($style)@"
@@ -38,3 +38,8 @@ style = "dimmed white"
 success_symbol = "[❯](bold green)"
 error_symbol = "[❯](bold red)"
 vimcmd_symbol = "[❮](bold green)"
+
+# DDG devbox: Chef's prompt showed "(Vespa: <env>)" when VESPA_ENV is set
+[env_var.VESPA_ENV]
+format = '[\(Vespa: $env_value\)]($style) '
+style = "bold yellow"

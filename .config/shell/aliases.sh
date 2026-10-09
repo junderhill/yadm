@@ -7,9 +7,9 @@ _alias_default() { alias "${1%%=*}" >/dev/null 2>&1 || alias "$1"; }
 # --- navigation (cd itself is zoxide: `cd foo` jumps to your most-used dir matching "foo") ---
 alias ..='cd ..' ...='cd ../..' ....='cd ../../..'
 mkcd() { mkdir -p "$1" && cd "$1"; }    # make a dir and cd into it
-_alias_default ll='ls -lh'
-_alias_default la='ls -lAh'
-_alias_default l='ls -lah'
+_alias_default ll='ls -alF'      # same as Chef's
+_alias_default la='ls -A'
+_alias_default l='ls -CF'
 if [ "$DOTFILES_OS" = Linux ]; then           # macOS gets colour from CLICOLOR instead
   _alias_default ls='ls --color=auto'
   _alias_default grep='grep --color=auto'
@@ -19,14 +19,14 @@ if [ -d ~/falcon-vault ]; then alias vault='cd ~/falcon-vault' work='cd ~/falcon
 alias dum='du -h -d 1 | sort -h'      # dir sizes, biggest last
 
 # --- devbox (Chef) aliases, available everywhere ---
-# Approximations of Chef's; on the devbox Chef's own definitions win.
+# Copied from Chef's ~/.ddg_aliases (2026-10-09); on the devbox Chef's own definitions win.
 _alias_default tn='tmux new -s'
-_alias_default ta='tmux attach -t'
+_alias_default ta='tmux a -t'
 _alias_default j='jobs'
-_alias_default cp='cp -v'
-_alias_default mv='mv -v'
-_alias_default rm='rm -v'
-_alias_default ln='ln -v'
+_alias_default cp='/bin/cp -v'
+_alias_default mv='/bin/mv -v'
+_alias_default rm='/bin/rm -v'
+_alias_default ln='/bin/ln -v'
 
 # --- editors / tools ---
 alias vim=nvim v=nvim
@@ -42,8 +42,8 @@ alias gco='git checkout' gcb='git checkout -b' gsw='git switch'
 alias gl='git pull' gp='git push'
 alias glog='git log --oneline --graph --decorate -20'
 _alias_default gc='git commit -a'
-_alias_default gs='git log -p --stat'
-_alias_default fix='git commit -a --amend --no-edit'
+_alias_default gs='git log -p --stat --color'
+_alias_default fix='git commit --amend -C HEAD'
 _alias_default ff='git merge --ff-only'
 # print the repo's main branch name (main/master)
 git_main_branch() {
